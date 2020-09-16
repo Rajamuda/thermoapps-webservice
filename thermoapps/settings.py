@@ -11,21 +11,24 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+import json
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+with open(BASE_DIR / "environment.json") as envvar:
+    ENV = json.load(envvar)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'f8(n996(^3%+o+$&$@i1@b^lih%&@70z5bp@zh_22bm#z(1d0h'
+SECRET_KEY = ENV['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = ENV['DEBUG']
 
-ALLOWED_HOSTS = ['django.test']
+ALLOWED_HOSTS = ENV['ALLOWED_HOST']
 
 
 # Application definition
