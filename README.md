@@ -24,7 +24,7 @@ deactivate
 ```
 
 ## Installation
-1. Install dependencies `pip install requirements.txt`
+1. Install dependencies `pip install -r requirements.txt`
 2. Create `environment.json` from`environment.example.json`
   - Defined `SECRET_KEY`, `DEBUG`, and `ALLOWED_HOST`
 3. Run `python migrate.py runserver`
