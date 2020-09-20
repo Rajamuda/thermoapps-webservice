@@ -1,7 +1,25 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
 import numpy as np
 import tensorflow as tf
+import json
 
 tf.config.set_visible_devices([], 'GPU')
+
+class NumpyEncoder(json.JSONEncoder):
+    """ Special json encoder for numpy types """
+    def default(self, obj):
+        if isinstance(obj, (np.int_, np.intc, np.intp, np.int8,
+            np.int16, np.int32, np.int64, np.uint8,
+            np.uint16, np.uint32, np.uint64)):
+            return int(obj)
+        elif isinstance(obj, (np.float_, np.float16, np.float32, 
+            np.float64)):
+            return float(obj)
+        elif isinstance(obj,(np.ndarray,)): #### This is the fix
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
 
 def get_iou(a, b, epsilon=1e-5):
     """

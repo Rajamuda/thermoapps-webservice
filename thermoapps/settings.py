@@ -18,7 +18,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 UPLOAD_DIR = BASE_DIR / "uploads"
 
-KERAS_MODEL_DIR = BASE_DIR / "keras-models"
+KERAS_MODEL_DIR = BASE_DIR / "predictors/keras-models"
 
 with open(BASE_DIR / "environment.json") as envvar:
     ENV = json.load(envvar)
@@ -44,8 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'predictors.apps.PredictorsConfig'
-    # 'rest_framework',
+    'predictors.apps.PredictorsConfig',
 ]
 
 MIDDLEWARE = [
@@ -64,7 +63,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            'predictors/templates'
+            'templates'
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -129,3 +128,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]

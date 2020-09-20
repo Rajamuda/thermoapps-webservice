@@ -1,26 +1,23 @@
 # from django.shortcuts import render
-from django.template import loader
 from django.http import HttpResponse, JsonResponse, HttpResponseNotAllowed
 from django.conf import settings
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import get_token, csrf_exempt
 
 # Create your views here.
 def index(request):
     data = {
         'status': True,
         'message': 'CSRF Token generator',
-        'csrf_token': csrf.get_token(request)
+        'csrf_token': get_token(request)
     }
     return JsonResponse(data)
 
 @csrf_exempt
-def uploadImage(request):
-    import os, time, datetime
+def upload_image(request):
+    import os, datetime, re, string
 
     if request.method != 'POST':
         return HttpResponseNotAllowed('Method Not Allowed')
-    # if request.method == 'GET':
-    #     return HttpResponse(loader.get_template('index.html').render())
     
     image = request.FILES['image']
 
@@ -30,14 +27,16 @@ def uploadImage(request):
             'message': 'Hanya menerima file gambar dengan format JPEG atau PNG'
         })
 
-    timestamp = str(time.mktime(datetime.datetime.today().timetuple()))
+    timestamp = str(int(datetime.datetime.timestamp(datetime.datetime.now())))
     
     upload_file_extension = image.content_type[6:]
-    upload_file_name = os.path.splitext(image.name)[0] + "_" + timestamp
+    upload_file_name = os.path.splitext(image.name)[0].replace(" ", "_") + "_" + timestamp
     upload_file_folder = datetime.datetime.now().strftime('%Y.%m.%d')
-    if not os.path.exists(upload_file_folder):
-        os.makedirs(upload_file_folder) 
-    
+
+    # create upload's directory if not exist based on current date
+    if not os.path.exists(settings.UPLOAD_DIR / upload_file_folder):
+        os.makedirs(settings.UPLOAD_DIR / upload_file_folder) 
+    # relative path to upload's directory
     upload_location = upload_file_folder + "/" + upload_file_name + "." + upload_file_extension
     try:
         with open(settings.UPLOAD_DIR / upload_location, 'wb+') as destination:
@@ -55,12 +54,16 @@ def uploadImage(request):
         'image': upload_location
     })
 
+@csrf_exempt
 def process(request):
-    from .processors import predict_img
+    if request.method != 'POST':
+        return HttpResponseNotAllowed('Method Not Allowed')
+
+    from .processors import NumpyEncoder, predict_img
     from PIL import Image
     import io
 
-    image_path = request.GET['image_path']
+    image_path = request.POST['image_path']
 
     model_1 = settings.KERAS_MODEL_DIR / '1_Model.042.h5'
     model_2 = settings.KERAS_MODEL_DIR / '2_Model.048.h5'
@@ -95,5 +98,6 @@ def process(request):
     results['neg_bbox'] = coor_neg
     # bytes resized image
     # results['image'] = img_bin
-
-    return HttpResponse(results)
+    
+    results['status'] = True
+    return JsonResponse(results, encoder=NumpyEncoder)
