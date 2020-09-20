@@ -1,4 +1,3 @@
-# from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, HttpResponseNotAllowed
 from django.conf import settings
 from django.views.decorators.csrf import get_token, csrf_exempt
