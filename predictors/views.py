@@ -61,7 +61,7 @@ def process(request):
 
     from .processors import NumpyEncoder, predict_img
     from PIL import Image
-    import io
+    import io, base64
 
     image_path = request.POST['image_path']
 
@@ -88,6 +88,7 @@ def process(request):
     img_bin = img_bin.getvalue()
 
     results = dict()
+    results['status'] = True
     # "positif hamil" probability
     results['pos_prob'] = X_pos
     # "positif hamil" bounding box
@@ -97,7 +98,6 @@ def process(request):
     # "negatif hamil" bounding box
     results['neg_bbox'] = coor_neg
     # bytes resized image
-    # results['image'] = img_bin
-    
-    results['status'] = True
+    results['image'] = {'type': 'image/png', 'base64_data': base64.b64encode(img_bin).decode('utf8')}
+
     return JsonResponse(results, encoder=NumpyEncoder)
