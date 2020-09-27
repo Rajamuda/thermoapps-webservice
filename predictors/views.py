@@ -58,7 +58,7 @@ def process(request):
     if request.method != 'POST':
         return HttpResponseNotAllowed('Method Not Allowed')
 
-    from .processors import NumpyEncoder, predict_img
+    from .processors import NumpyEncoder, predict_img, draw_bbox
     from PIL import Image
     import io, base64
 
@@ -80,6 +80,7 @@ def process(request):
     img = img.resize((360, 360), Image.ANTIALIAS)
 
     X_pos, coor_pos, X_neg, coor_neg = predict_img(img, list_model, 30)
+    prob = draw_bbox(img, X_pos, coor_pos, X_neg, coor_neg)
 
     # turn resized image to binary (bytes)
     img_bin = io.BytesIO()
@@ -87,15 +88,8 @@ def process(request):
     img_bin = img_bin.getvalue()
 
     results = dict()
-    results['status'] = True
     # "positif hamil" probability
-    results['pos_prob'] = X_pos
-    # "positif hamil" bounding box
-    results['pos_bbox'] = coor_pos
-    # "negatif hamil" probability
-    results['neg_prob'] = X_neg
-    # "negatif hamil" bounding box
-    results['neg_bbox'] = coor_neg
+    results['prob'] = prob
     # bytes resized image
     results['image'] = {'type': 'image/png', 'base64_data': base64.b64encode(img_bin).decode('utf8')}
 

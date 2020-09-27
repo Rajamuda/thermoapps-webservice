@@ -102,10 +102,31 @@ def predict_img(img, list_model, step):
     
     X_final_abdo_pos, coor_final_abdo_pos = soft_nms(X_pred_abdo_pos, coor_pred_abdo_pos, 1)
     X_final_abdo_neg, coor_final_abdo_neg = soft_nms(X_pred_abdo_neg, coor_pred_abdo_neg, 2)
-
-    X_final_abdo_pos = [X_final_abdo_pos[i, 1] for i in range(X_final_abdo_pos.shape[0])]
-    X_final_abdo_neg = [X_final_abdo_neg[i, 2] for i in range(X_final_abdo_neg.shape[0])]
-    coor_final_abdo_pos = [list(coor_final_abdo_pos[i]) for i in range(coor_final_abdo_pos.shape[0])]
-    coor_final_abdo_neg = [list(coor_final_abdo_neg[i]) for i in range(coor_final_abdo_neg.shape[0])]
     
     return X_final_abdo_pos, coor_final_abdo_pos, X_final_abdo_neg, coor_final_abdo_neg
+
+def draw_bbox(img, X_pos, coor_pos, X_neg, coor_neg):
+    from PIL import ImageDraw
+    
+    draw = ImageDraw.Draw(img)
+    if (X_pos.shape[0] >= X_neg.shape[0]) and (X_pos.shape[0] != 0):
+        # draw bbox
+        draw.rectangle([(coor_pos[0, 0], coor_pos[0, 1]), (coor_pos[0, 2], coor_pos[0, 3])], outline=(0, 255, 255), width=5)
+        # draw label + value
+        draw.rectangle([(coor_pos[0, 0], coor_pos[0, 1]), (coor_pos[0, 0]+50, coor_pos[0, 1]+10)], fill=(0, 255, 255))
+        draw.text([(coor_pos[0, 0], coor_pos[0, 1])], text='pos:{:.2f}'.format(X_pos[0, 1]), fill='black')
+        prob = X_pos[0, 1]
+
+    elif (X_neg.shape[0] > X_pos.shape[0]) and (X_neg.shape[0] != 0):
+        # draw bbox
+        draw.rectangle([(coor_neg[0, 0], coor_neg[0, 1]), (coor_neg[0, 2], coor_neg[0, 3])], outline=(255, 255, 0), width=5)
+        # draw label + value
+        draw.rectangle([(coor_neg[0, 0], coor_neg[0, 1]), (coor_neg[0, 0]+50, coor_neg[0, 1]+10)], fill=(255, 255, 0))
+        # draw.text([(coor_neg[0, 0], coor_neg[0, 1])], text='neg:{:.2f}'.format(X_neg[0, 2]), fill='black')
+        draw.text([(coor_neg[0, 0], coor_neg[0, 1])], text='pos:{:.2f}'.format(X_neg[0, 1]), fill='black')
+        prob = X_neg[0, 1]
+    # no prediction
+    else:
+        prob = -1
+    
+    return prob
