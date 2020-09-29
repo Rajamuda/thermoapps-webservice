@@ -79,8 +79,14 @@ def process(request):
 
     img = img.resize((360, 360), Image.ANTIALIAS)
 
-    X_pos, coor_pos, X_neg, coor_neg = predict_img(img, list_model, 30)
-    prob = draw_bbox(img, X_pos, coor_pos, X_neg, coor_neg)
+    try:
+        X_pos, coor_pos, X_neg, coor_neg = predict_img(img, list_model, 30)
+        prob = draw_bbox(img, X_pos, coor_pos, X_neg, coor_neg)
+    except:
+        return JsonResponse({
+            'status': False,
+            'message': 'Proses prediksi gagal'
+        })
 
     # turn resized image to binary (bytes)
     img_bin = io.BytesIO()
@@ -88,6 +94,7 @@ def process(request):
     img_bin = img_bin.getvalue()
 
     results = dict()
+    results['status'] = True
     # "positif hamil" probability
     results['prob'] = prob
     # bytes resized image
